@@ -2,28 +2,37 @@
 
 Demand & spot predictor for online drivers.
 
-## Jalankan
+## Local
 
 ```bash
 docker-compose up --build
 ```
 
 - Docs: http://localhost:8000/docs
-- Health: http://localhost:8000/health
+- Seed: POST /seed
+- Recommend: GET /recommend
 
-## Tes cepat
+## Deploy ke VPS
 
-1. POST `/seed` (generate data dummy Surabaya)
-2. GET `/recommend`
+```bash
+git clone https://github.com/mistererte234-source/ZanDrive.git
+cd ZanDrive
+cp .env.example .env
+# edit password di .env
+chmod +x deploy.sh
+./deploy.sh
+```
+
+Atau manual:
+
+```bash
+docker-compose -f docker-compose.prod.yml up -d --build
+```
 
 ## Telegram Bot
 
-1. Buat bot di @BotFather, dapat token
-2. Set env `TELEGRAM_BOT_TOKEN`
-3. Jalankan:
-
 ```bash
+export TELEGRAM_BOT_TOKEN=your_token
+export API_BASE=http://localhost:8000
 python bot/telegram_bot.py
 ```
-
-Driver share lokasi → tercatat. Ketik `/rekomendasi` buat dapat spot.
