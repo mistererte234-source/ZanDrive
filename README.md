@@ -2,37 +2,31 @@
 
 Demand & spot predictor for online drivers.
 
-## Local
-
-```bash
-docker-compose up --build
-```
-
-- Docs: http://localhost:8000/docs
-- Seed: POST /seed
-- Recommend: GET /recommend
-
-## Deploy ke VPS
+## Deploy ke VPS (zandrive.zandev.id)
 
 ```bash
 git clone https://github.com/mistererte234-source/ZanDrive.git
 cd ZanDrive
 cp .env.example .env
 # edit password di .env
-chmod +x deploy.sh
-./deploy.sh
-```
 
-Atau manual:
-
-```bash
+# Jalankan API
 docker-compose -f docker-compose.prod.yml up -d --build
+
+# Nginx
+sudo cp nginx/zandrive.conf /etc/nginx/sites-available/zandrive
+sudo ln -s /etc/nginx/sites-available/zandrive /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+
+# SSL (Let's Encrypt)
+sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d zandrive.zandev.id
 ```
 
-## Telegram Bot
+Setelah itu akses: https://zandrive.zandev.id/docs
+
+## Local
 
 ```bash
-export TELEGRAM_BOT_TOKEN=your_token
-export API_BASE=http://localhost:8000
-python bot/telegram_bot.py
+docker-compose up --build
 ```
