@@ -1,32 +1,28 @@
 # ZanDrive
 
-Demand & spot predictor for online drivers.
+## Deploy
 
-## Deploy ke VPS (zandrive.zandev.id)
+Sudah live di https://zandrive.zandev.id
 
+Update:
 ```bash
-git clone https://github.com/mistererte234-source/ZanDrive.git
-cd ZanDrive
-cp .env.example .env
-# edit password di .env
-
-# Jalankan API
-docker-compose -f docker-compose.prod.yml up -d --build
-
-# Nginx
-sudo cp nginx/zandrive.conf /etc/nginx/sites-available/zandrive
-sudo ln -s /etc/nginx/sites-available/zandrive /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-
-# SSL (Let's Encrypt)
-sudo apt install certbot python3-certbot-nginx -y
-sudo certbot --nginx -d zandrive.zandev.id
+cd ~/ZanDrive/ZanDrive
+git pull
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-Setelah itu akses: https://zandrive.zandev.id/docs
+## Telegram Bot
 
-## Local
-
+1. Buat bot di @BotFather → dapat token
+2. Di VPS:
 ```bash
-docker-compose up --build
+export TELEGRAM_BOT_TOKEN=your_token_here
+export API_BASE=https://zandrive.zandev.id
+cd ~/ZanDrive/ZanDrive
+python bot/telegram_bot.py
 ```
+
+Driver:
+- /start → otomatis daftar + dapat API key
+- Share lokasi → tercatat
+- /rekomendasi → spot terbaik
