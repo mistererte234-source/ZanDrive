@@ -1,55 +1,45 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from .database import engine, Base, get_db
-from .schemas import LocationIn, SpotRecommendation
-from .crud import create_log
+from .schemas import LocationIn, SpotRecommendation, UserCreate, UserOut
+from .crud import create_log, create_user, get_user_by_key
 from .predictor import recommend_spots
-from typing import List
-import random
+from typing import List, Optional
 
-app = FastAPI(title="ZanDrive", version="0.1.0")
+app = FastAPI(title="ZanDrive", version="0.2.0")
 
 @app.on_event("startup")
 async def startup():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-@app.post("/log", response_model=dict)
-async def log_location(data: LocationIn, db: AsyncSession = Depends(get_db)):
-    log = await create_log(db, data)
+async def get_current_user(x_api_key: str = Header(...), db: AsyncSession = Depends(get_db)):
+    user = await get_user_by_key(db, x_api_key)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    return user
+
+@app.post("/register", response_model=UserOut)
+async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
+    return await create_user(db, data)
+
+@app.post("/log")
+async def log_location(
+    data: LocationIn,
+    user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    log = await create_log(db, user.id, data)
     return {"id": log.id, "geohash": log.geohash, "status": "logged"}
 
 @app.get("/recommend", response_model=List[SpotRecommendation])
-async def get_recommendations(db: AsyncSession = Depends(get_db)):
-    return await recommend_spots(db)
-
-@app.post("/seed")
-async def seed_dummy_data(db: AsyncSession = Depends(get_db)):
-    """Generate sample data around Surabaya for testing."""
-    base_spots = [
-        (-7.2575, 112.7521),  # Surabaya center
-        (-7.2650, 112.7450),
-        (-7.2500, 112.7600),
-        (-7.2700, 112.7400),
-        (-7.2450, 112.7550),
-    ]
-    count = 0
-    for _ in range(80):
-        lat, lng = random.choice(base_spots)
-        lat += random.uniform(-0.01, 0.01)
-        lng += random.uniform(-0.01, 0.01)
-        got = random.random() < 0.65
-        data = LocationIn(
-            user_id=f"driver{random.randint(1,5)}",
-            lat=lat,
-            lng=lng,
-            status="waiting",
-            got_passenger=got,
-            wait_minutes=random.randint(2, 25) if not got else random.randint(1, 12),
-        )
-        await create_log(db, data)
-        count += 1
-    return {"seeded": count}
+async def get_recommendations(
+    personal: bool = True,
+    user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    uid = user.id if personal else None
+    return await recommend_spots(db, user_id=uid)
 
 @app.get("/health")
 async def health():

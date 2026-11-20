@@ -1,9 +1,18 @@
 from pydantic import BaseModel
-from datetime import datetime
 from typing import Optional
 
+class UserCreate(BaseModel):
+    username: str
+
+class UserOut(BaseModel):
+    id: int
+    username: str
+    api_key: str
+
+    class Config:
+        from_attributes = True
+
 class LocationIn(BaseModel):
-    user_id: str
     lat: float
     lng: float
     status: str = "idle"
