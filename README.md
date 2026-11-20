@@ -1,29 +1,29 @@
 # ZanDrive
 
-Demand & spot predictor for online drivers (Grab, Gojek, etc.).
+Demand & spot predictor for online drivers.
 
-MVP focused on:
-- Logging location + trip outcomes
-- Ranking best spots by hour based on historical data
-- Zero LLM dependency (pure stats)
-
-## Stack
-- FastAPI
-- PostgreSQL
-- Docker Compose
-
-## Quick Start
+## Jalankan
 
 ```bash
-cp .env.example .env
-# edit .env if needed
 docker-compose up --build
 ```
 
-API akan jalan di `http://localhost:8000`
-Docs: `http://localhost:8000/docs`
+- Docs: http://localhost:8000/docs
+- Health: http://localhost:8000/health
 
-## Next Steps
-- Connect Telegram bot
-- Add GMaps traffic enrichment
-- Add auth + subscription
+## Tes cepat
+
+1. POST `/seed` (generate data dummy Surabaya)
+2. GET `/recommend`
+
+## Telegram Bot
+
+1. Buat bot di @BotFather, dapat token
+2. Set env `TELEGRAM_BOT_TOKEN`
+3. Jalankan:
+
+```bash
+python bot/telegram_bot.py
+```
+
+Driver share lokasi → tercatat. Ketik `/rekomendasi` buat dapat spot.
